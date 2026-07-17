@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plant Selection Guide for Tropical Gardens — Searchable Index</title>
+<style>
+  :root {
+    --green-dark: #1b4332;
+    --green: #2d6a4f;
+    --green-mid: #40916c;
+    --green-light: #d8f3dc;
+    --cream: #faf9f4;
+    --ink: #1f2a24;
+    --muted: #6b7d72;
+    --border: #dde5de;
+    --card-bg: #ffffff;
+    --shadow: 0 1px 3px rgba(27,67,50,0.08), 0 1px 2px rgba(27,67,50,0.06);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+  }
+  header {
+    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    color: #fff;
+    padding: 28px 24px 22px;
+  }
+  header h1 {
+    margin: 0 0 4px;
+    font-size: clamp(1.3rem, 2.5vw, 1.9rem);
+    font-weight: 700;
+  }
+  header p {
+    margin: 0;
+    opacity: 0.88;
+    font-size: 0.95rem;
+  }
+  .controls {
+    max-width: 1200px;
+    margin: -18px auto 0;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+  }
+  .controls-inner {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  #search {
+    flex: 1 1 260px;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 1rem;
+    outline: none;
+  }
+  #search:focus { border-color: var(--green-mid); }
+  select {
+    padding: 10px 10px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 0.92rem;
+    background: #fff;
+    color: var(--ink);
+    max-width: 190px;
+  }
+  #clearBtn {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--green-light);
+    color: var(--green-dark);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  #clearBtn:hover { background: #c2e8cd; }
+  main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  #count { color: var(--muted); font-size: 0.9rem; margin: 4px 4px 14px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(27,67,50,0.14); }
+  .card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background: var(--green-light);
+    display: block;
+  }
+  .card-body { padding: 10px 12px 12px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .card-name { font-weight: 700; font-size: 0.98rem; line-height: 1.25; color: var(--green-dark); }
+  .card-botanical { font-style: italic; color: var(--muted); font-size: 0.82rem; }
+  .card-meta { margin-top: auto; display: flex; flex-wrap: wrap; gap: 5px; padding-top: 6px; }
+  .badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--green-light);
+    color: var(--green-dark);
+    white-space: nowrap;
+  }
+  .badge.sun { background: #fff3cd; color: #7a5c00; }
+  .badge.shade { background: #dbe4ff; color: #33408f; }
+  .badge.part { background: #e6f4ea; color: var(--green-dark); }
+  #empty { text-align: center; color: var(--muted); padding: 60px 20px; display: none; }
+
+  /* modal */
+  .overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(20,30,24,0.55);
+    z-index: 50;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 30px 16px;
+    overflow-y: auto;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 14px;
+    max-width: 780px;
+    width: 100%;
+    padding: 0;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal-close {
+    position: absolute; top: 10px; right: 12px;
+    background: rgba(0,0,0,0.45);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .modal-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 4px;
+  }
+  .modal-gallery img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+  }
+  .modal-body { padding: 20px 24px 26px; }
+  .modal-body h2 { margin: 0 0 2px; color: var(--green-dark); }
+  .modal-botanical { font-style: italic; color: var(--muted); margin-bottom: 10px; }
+  .modal-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .modal-field { margin-bottom: 10px; font-size: 0.94rem; }
+  .modal-field b { color: var(--green-dark); }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+    padding: 30px 20px 50px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌿 Plant Selection Guide for Tropical Gardens</h1>
+  <p>Searchable index — Graeme Chuck's Phuket garden plant book</p>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <input id="search" type="text" placeholder="Search by name, family, botanical name, or description…" autocomplete="off">
+    <select id="filterSection"><option value="">All sections</option></select>
+    <select id="filterFamily"><option value="">All families</option></select>
+    <select id="filterSunshade"><option value="">All sun/shade</option></select>
+    <select id="filterHabit"><option value="">All growing habits</option></select>
+    <button id="clearBtn">Clear</button>
+  </div>
+</div>
+
+<main>
+  <div id="count"></div>
+  <div class="grid" id="grid"></div>
+  <div id="empty">No plants match your search. Try clearing a filter.</div>
+</main>
+
+<footer>
+  Built from the book's own text, photos and index — 298 plant entries. Data may contain the occasional transcription quirk from the original source pages.
+</footer>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script src="data.js"></script>
+<script>
+const grid = document.getElementById('grid');
+const countEl = document.getElementById('count');
+const emptyEl = document.getElementById('empty');
+const searchEl = document.getElementById('search');
+const fSection = document.getElementById('filterSection');
+const fFamily = document.getElementById('filterFamily');
+const fSunshade = document.getElementById('filterSunshade');
+const fHabit = document.getElementById('filterHabit');
+const overlay = document.getElementById('overlay');
+const modal = document.getElementById('modal');
+
+function uniqSorted(key) {
+  return [...new Set(PLANTS.map(p => p[key]).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+}
+function fillSelect(sel, values) {
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  });
+}
+fillSelect(fSection, uniqSorted('section'));
+fillSelect(fFamily, uniqSorted('family'));
+fillSelect(fSunshade, uniqSorted('sunshade'));
+fillSelect(fHabit, uniqSorted('habit'));
+
+function sunshadeClass(s) {
+  if (!s) return '';
+  if (s.includes('full')) return 'sun';
+  if (s.includes('no direct') || s.includes('shade/')) return 'shade';
+  return 'part';
+}
+
+function render() {
+  const q = searchEl.value.trim().toLowerCase();
+  const sec = fSection.value, fam = fFamily.value, sun = fSunshade.value, hab = fHabit.value;
+
+  const results = PLANTS.filter(p => {
+    if (sec && p.section !== sec) return false;
+    if (fam && p.family !== fam) return false;
+    if (sun && p.sunshade !== sun) return false;
+    if (hab && p.habit !== hab) return false;
+    if (q) {
+      const hay = (p.name + ' ' + p.family + ' ' + p.botanical + ' ' + p.desc).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  countEl.textContent = `${results.length} of ${PLANTS.length} plants`;
+  grid.innerHTML = '';
+  emptyEl.style.display = results.length ? 'none' : 'block';
+
+  const frag = document.createDocumentFragment();
+  results.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.onclick = () => openModal(p);
+    const img = p.photos[0] ? `images/${p.photos[0]}` : '';
+    card.innerHTML = `
+      ${img ? `<img loading="lazy" src="${img}" alt="${p.name}">` : `<div style="height:150px;background:var(--green-light)"></div>`}
+      <div class="card-body">
+        <div class="card-name">${p.name}</div>
+        <div class="card-botanical">${p.botanical || ''}</div>
+        <div class="card-meta">
+          ${p.sunshade ? `<span class="badge ${sunshadeClass(p.sunshade)}">${p.sunshade}</span>` : ''}
+          ${p.family ? `<span class="badge">${p.family}</span>` : ''}
+        </div>
+      </div>`;
+    frag.appendChild(card);
+  });
+  grid.appendChild(frag);
+}
+
+function openModal(p) {
+  const gallery = p.photos.map(f => `<img src="images/${f}" alt="${p.name}">`).join('');
+  modal.innerHTML = `
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-gallery">${gallery}</div>
+    <div class="modal-body">
+      <h2>${p.name}</h2>
+      <div class="modal-botanical">${p.botanical || ''}</div>
+      <div class="modal-badges">
+        ${p.family ? `<span class="badge">${p.family}</span>` : ''}
+        ${p.section ? `<span class="badge">${p.section}</span>` : ''}
+        ${p.sunshade ? `<span class="badge ${sunshadeClass(p.sunshade)}">${p.sunshade}</span>` : ''}
+        ${p.habit ? `<span class="badge">${p.habit}</span>` : ''}
+      </div>
+      ${p.desc ? `<div class="modal-field"><b>Growing tips:</b> ${p.desc}</div>` : ''}
+      <div class="modal-field"><b>Book page:</b> ${p.page}</div>
+    </div>`;
+  overlay.classList.add('open');
+}
+function closeModal() { overlay.classList.remove('open'); }
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+[searchEl, fSection, fFamily, fSunshade, fHabit].forEach(el => {
+  el.addEventListener('input', render);
+  el.addEventListener('change', render);
+});
+document.getElementById('clearBtn').addEventListener('click', () => {
+  searchEl.value = '';
+  fSection.value = ''; fFamily.value = ''; fSunshade.value = ''; fHabit.value = '';
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
