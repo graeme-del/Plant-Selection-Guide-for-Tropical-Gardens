@@ -276,7 +276,7 @@ function render() {
     const card = document.createElement('div');
     card.className = 'card';
     card.onclick = () => openModal(p);
-    const img = p.photos[0] ? `images/${p.photos[0]}` : '';
+    const img = p.photos[0] ? `${p.photos[0]}` : '';
     card.innerHTML = `
       ${img ? `<img loading="lazy" src="${img}" alt="${p.name}">` : `<div style="height:150px;background:var(--green-light)"></div>`}
       <div class="card-body">
@@ -293,7 +293,7 @@ function render() {
 }
 
 function openModal(p) {
-  const gallery = p.photos.map(f => `<img src="images/${f}" alt="${p.name}">`).join('');
+  const gallery = p.photos.map(f => `<img src="${f}" alt="${p.name}">`).join('');
   modal.innerHTML = `
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-gallery">${gallery}</div>
